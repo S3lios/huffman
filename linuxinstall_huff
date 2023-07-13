@@ -1,0 +1,126 @@
+#!/bin/bash
+pwd=`pwd`
+SRC="src"
+EXEC="exec"
+OBJ="obj"
+installdir=~/.huffman
+
+mkdir $OBJ >> /dev/null 2>&1
+
+rm $OBJ/compresser >> /dev/null 2>&1
+rm $OBJ/decompresser >> /dev/null 2>&1
+rm $OBJ/compresser >> /dev/null 2>&1
+rm $OBJ/decompresser >> /dev/null 2>&1
+
+cd $OBJ
+echo Creation des executables..
+gnatmake $pwd/src/compresser.adb >> /dev/null 2>&1
+gnatmake $pwd/src/decompresser.adb >> /dev/null 2>&1
+
+cd ..
+
+mkdir $installdir >> /dev/null 2>&1
+
+mv $OBJ/compresser $installdir/compresser
+mv $OBJ/decompresser $installdir/decompresser
+
+rm $installdir/comp
+rm $installdir/dcomp
+touch $installdir/comp
+touch $installdir/dcomp
+
+chmod u+x $installdir/comp $installdir/dcomp
+
+echo "#!/bin/bash
+if [ \$# = 2 ]
+then
+  chemin=\$2
+  opt=\$1
+else
+  chemin=\$1
+  opt=-n
+fi
+if [ -d \$chemin ]
+then
+ rm -r \$chemin.hff >> /dev/null 2>&1
+ list=\`ls -a \$chemin\`
+ mkdir \$chemin.hff
+  for elem in \$list
+  do
+    if [ ! \$elem = \".\" ]
+    then
+      if [ ! \$elem = \"..\" ]
+      then
+        $installdir/comp \$opt \$chemin/\$elem
+        mv \$chemin/\$elem.hff \$chemin.hff/\$elem.hff
+      fi
+    fi
+  done
+  
+elif [ -e \$chemin ]
+then
+ $installdir/compresser \$opt \$chemin
+ if [ \$opt != \"-n\" ]
+ then 
+    	echo \" \"
+ fi 
+else
+ echo Fichier ou dossier non trouve
+fi
+" >> $installdir/comp
+
+echo "#!/bin/bash
+if [ \$# = 2 ]
+then
+  chemin=\$2
+  opt=\$1	
+else
+  chemin=\$1
+  opt=-n
+fi
+chemin=\${chemin%.hff}
+if [ -d \$chemin.hff ]
+then
+ rm -r \$chemin >> /dev/null 2>&1
+ list=\`ls -a \$chemin.hff\`
+ mkdir \$chemin
+  for elem in \$list
+  do
+      if [ ! \$elem = \".\" ]
+      then
+        if [ ! \$elem = \"..\" ]
+        then
+	    elem=\${elem%.hff}
+	    $installdir/dcomp \$opt \$chemin.hff/\$elem
+	    mv \$chemin.hff/\$elem \$chemin/\$elem
+       fi
+     fi
+  done
+ 
+elif [ -e \$chemin.hff ]
+then
+ $installdir/decompresser \$opt \$chemin.hff
+ if [ \$opt != \"-n\" ]
+ then 
+    	echo \" \"
+ fi 
+else
+ echo Fichier ou dossier non trouve
+fi
+" >> $installdir/dcomp
+
+echo Ajout des commandes...
+
+if [ -z "`grep "^alias comp=$installdir/comp" ~/.bashrc`" ]
+then
+	echo "alias comp=$installdir/comp" >> ~/.bashrc
+fi
+if [ -z "`grep "^alias dcomp=$installdir/dcomp" ~/.bashrc`" ]
+then
+	echo "alias dcomp=$installdir/dcomp" >> ~/.bashrc
+fi
+
+rm $OBJ/*
+rmdir $OBJ
+
+echo Installation termine.

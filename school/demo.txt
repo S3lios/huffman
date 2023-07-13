@@ -1,0 +1,25 @@
+1) Décompression de src.tgz pour récupérer les codes de nos programmes et modules
+
+2) Création des exécutables en direct à partir des sources 
+
+3) Présentation des fichiers que nous allons compresser et décompresser : 
+    1 fichier en cyrillique
+    1 fichier en alphabet latin
+    1 fichier en binaire (exécutable)
+    (1 dossier de fichier pour présenter l'installateur linux)
+    
+4) Compression des fichiers (utilisation time)
+    test de rapidité
+
+4-bis) Compression des fichiers (utilisation valgrind)
+    test de fuites mémoires
+
+5) Décompression des fichiers (noms différents pour pouvoir les comparer)
+    Décompression avec time et valgrind
+    3 nouveaux fichiers qui ont été compressés et décompressés
+
+6) Comparaison fichier originale / fichier après compression et décompression
+    utilisation de la commande unix "diff nom_fichier1 nom_fichier2"
+
+7) Présentation des modes BAVARD et MINIBAVARD
+    
